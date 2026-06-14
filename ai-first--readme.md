@@ -2,6 +2,10 @@
 
 Разработан MVP инфраструктурной платформы managed Kubernetes в облаке **cloud.ru** для приложения **Online Boutique** (microservices-demo). Решение включает:
 
+Ситемные требования:
+4 CPU / 4 GiB - для приложений
+4 CPU / 8 GiB - для остальных компонентов.
+
 - Автоматизацию создания кластера Kubernetes через Terraform.
 - Развёртывание платформенных сервисов (Ingress-контроллер, мониторинг, логирование) с помощью Helm.
 - Деплой трёх компонентов приложения (`frontend`, `cartservice`, `productcatalogservice`) через CI/CD (GitHub Actions).
