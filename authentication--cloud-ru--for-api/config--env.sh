@@ -1,7 +1,13 @@
 
-cd MikeSMR-admin/ai-first--k8s--otus/authentication--cloud-ru--for-api/
-chmod +x get-token--script create-sa--script delete-sa--script menu--script
-./menu--script.sh
+# Скрипт для настройки переменных окружения для работы с API Cloud.ru
+
+# cd ~/repo--ai-first--k8s-otus/ai-first--k8s--otus/ai-first--k8s--otus/authentication--cloud-ru--for-api/
+chmod +x get-token--script.sh
+chmod +x create-sa--script.sh 
+chmod +x delete-sa--script.sh 
+chmod +x menu--script.sh 
+chmod +x config--env.sh
+# ./menu--script.sh
 
 
 # Конфигурация для работы с API Cloud.ru
