@@ -1,100 +1,100 @@
 ---
 name: openspec-archive-change
-description: Archive a completed change in the experimental workflow. Use when the user wants to finalize and archive a change after implementation is complete.
+description: Архивировать завершенное изменение в экспериментальном рабочем процессе. Используйте, когда пользователь хочет завершить и архивировать изменение после ��авершения реализации.
 license: MIT
-compatibility: Requires openspec CLI.
+compatibility: Требуется openspec CLI.
 metadata:
   author: openspec
   version: "1.0"
   generatedBy: "1.4.1"
 ---
 
-Archive a completed change in the experimental workflow.
+Архивировать завершенное изменение в экспериментальном рабочем процессе.
 
-**Input**: Optionally specify a change name. If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
+**Ввод**: Опционально укажите имя изменения. Если не указано, проверьте, можно ли вывести его из контекста разговора. Если неясно или неоднозначно, ВЫ ДОЛЖНЫ запросить доступные изменения.
 
-**Steps**
+**Шаги**
 
-1. **If no change name provided, prompt for selection**
+1. **Если имя изменения не предоставлено, запросите выбор**
 
-   Run `openspec list --json` to get available changes. Use the **AskUserQuestion tool** to let the user select.
+   Запустите `openspec list --json` для получения доступных изменений. Используйте **AskUserQuestion tool** для выбора пользователем.
 
-   Show only active changes (not already archived).
-   Include the schema used for each change if available.
+   Покажите только активные изменения (не уже архивированные).
+   Включите используемую схему для каждого изменения, если доступно.
 
-   **IMPORTANT**: Do NOT guess or auto-select a change. Always let the user choose.
+   **ВАЖНО**: Не угадывайте и не выбирайте автоматически изменение. Всегда позволяйте пользователю выбрать.
 
-2. **Check artifact completion status**
+2. **Проверка статуса завершения артефактов**
 
-   Run `openspec status --change "<name>" --json` to check artifact completion.
+   Запустите `openspec status --change "<name>" --json` для проверки завершения артефактов.
 
-   Parse the JSON to understand:
-   - `schemaName`: The workflow being used
-   - `planningHome`, `changeRoot`, `artifactPaths`, and `actionContext`: path and scope context
-   - `artifacts`: List of artifacts with their status (`done` or other)
+   Разберите JSON для понимания:
+   - `schemaName`: Используемый рабочий процесс
+   - `planningHome`, `changeRoot`, `artifactPaths`, и `actionContext`: контекст пути и области
+   - `artifacts`: Список артефактов со статусом (`done` или другой)
 
-   If status reports `actionContext.mode: "workspace-planning"`, explain that workspace archive is not supported in this slice and STOP. Do not move workspace changes into repo-local archives or edit linked repos.
+   Если статус сообщает `actionContext.mode: "workspace-planning"`, объясните, что архивация рабочей области не поддерживается в этом срезе, и ОСТАНОВИТЕСЬ. Не перемещайте изменения рабочей области в локальные репозитории архивы или не редактируйте связанные репозитории.
 
-   **If any artifacts are not `done`:**
-   - Display warning listing incomplete artifacts
-   - Use **AskUserQuestion tool** to confirm user wants to proceed
-   - Proceed if user confirms
+   **Если какие-либо артефакты не `done`:**
+   - Отобразите предупреждение, перечисляющее незавершенные артефакты
+   - Используйте **AskUserQuestion tool** для подтверждения, что пользователь хочет продолжить
+   - Продолжайте, если пользователь подтверждает
 
-3. **Check task completion status**
+3. **Проверка статуса завершения задач**
 
-   Read the tasks file (typically `tasks.md`) to check for incomplete tasks.
+   Прочитайте файл задач (обычно `tasks.md`) для проверки незавершенных задач.
 
-   Count tasks marked with `- [ ]` (incomplete) vs `- [x]` (complete).
+   Подсчитайте задачи, помеченные `- [ ]` (незавершенные) vs `- [x]` (завершенные).
 
-   **If incomplete tasks found:**
-   - Display warning showing count of incomplete tasks
-   - Use **AskUserQuestion tool** to confirm user wants to proceed
-   - Proceed if user confirms
+   **Если найдены незавершенные задачи:**
+   - Отобразите предупреждение, показывающее количество незавершенных задач
+   - Используйте **AskUserQuestion tool** для подтверждения, что пользователь хочет продолжить
+   - Продолжайте, если пользователь подтверждает
 
-   **If no tasks file exists:** Proceed without task-related warning.
+   **Если файл задач не существует:** Продолжайте без предупреждения о задачах.
 
-4. **Assess delta spec sync state**
+4. **Оценка состояния синхронизации delta spec**
 
-   Use `artifactPaths.specs.existingOutputPaths` from status JSON to check for delta specs. If none exist, proceed without sync prompt.
+   Используйте `artifactPaths.specs.existingOutputPaths` из JSON статуса для проверки delta specs. Если их нет, продолжайте без запроса синхронизации.
 
-   **If delta specs exist:**
-   - Compare each delta spec with its corresponding main spec at `openspec/specs/<capability>/spec.md`
-   - Determine what changes would be applied (adds, modifications, removals, renames)
-   - Show a combined summary before prompting
+   **Если delta specs существуют:**
+   - Сравните каждый delta spec с соответствующим основным spec в `openspec/specs/<capability>/spec.md`
+   - Определите, какие изменения будут применены (добавления, модификации, удаления, переименования)
+   - Отобразите объединенную сводку перед запросом
 
-   **Prompt options:**
-   - If changes needed: "Sync now (recommended)", "Archive without syncing"
-   - If already synced: "Archive now", "Sync anyway", "Cancel"
+   **Варианты запроса:**
+   - Если нужны изменения: "Sync now (recommended)", "Archive without syncing"
+   - Если уже синхронизировано: "Archive now", "Sync anyway", "Cancel"
 
-   If user chooses sync, use Task tool (subagent_type: "general-purpose", prompt: "Use Skill tool to invoke openspec-sync-specs for change '<name>'. Delta spec analysis: <include the analyzed delta spec summary>"). Proceed to archive regardless of choice.
+   Если пользователь выбирает синхронизацию, используйте Task tool (subagent_type: "general-purpose", prompt: "Use Skill tool to invoke openspec-sync-specs for change '<name>'. Delta spec analysis: <include the analyzed delta spec summary>"). Продолжайте к архивации независимо от выбора.
 
-5. **Perform the archive**
+5. **Выполнение архивации**
 
-   Create an `archive` directory under `planningHome.changesDir` if it doesn't exist:
+   Создайте каталог `archive` под `planningHome.changesDir`, если он не существует:
    ```bash
    mkdir -p "<planningHome.changesDir>/archive"
    ```
 
-   Generate target name using current date: `YYYY-MM-DD-<change-name>`
+   Сгенерируйте целевое имя, используя текущую дату: `YYYY-MM-DD-<change-name>`
 
-   **Check if target already exists:**
-   - If yes: Fail with error, suggest renaming existing archive or using different date
-   - If no: Move `changeRoot` to the archive directory
+   **Проверьте, существует ли целевой файл:**
+   - Если да: Ошибка с сообщением, предложите переименовать существующий архив или использовать другую дату
+   - Если нет: Переместите `changeRoot` в каталог архива
 
    ```bash
    mv "<changeRoot>" "<planningHome.changesDir>/archive/YYYY-MM-DD-<name>"
    ```
 
-6. **Display summary**
+6. **Отображение сводки**
 
-   Show archive completion summary including:
-   - Change name
-   - Schema that was used
-   - Archive location
-   - Whether specs were synced (if applicable)
-   - Note about any warnings (incomplete artifacts/tasks)
+   Покажите сводку завершения архивации, включая:
+   - Имя изменения
+   - Используемая схема
+   - Местоположение архива
+   - Были ли specs синхронизированы (если применимо)
+   - Примечание о любых предупреждениях (незавершенные артефакты/задачи)
 
-**Output On Success**
+**Вывод при успехе**
 
 ```
 ## Archive Complete
@@ -107,11 +107,11 @@ Archive a completed change in the experimental workflow.
 All artifacts complete. All tasks complete.
 ```
 
-**Guardrails**
-- Always prompt for change selection if not provided
-- Use artifact graph (openspec status --json) for completion checking
-- Don't block archive on warnings - just inform and confirm
-- Preserve .openspec.yaml when moving to archive (it moves with the directory)
-- Show clear summary of what happened
-- If sync is requested, use openspec-sync-specs approach (agent-driven)
-- If delta specs exist, always run the sync assessment and show the combined summary before prompting
+**Ограничения**
+- Всегда запрашивайте выбор изменения, если не предоставлено
+- Используйте граф артефактов (openspec status --json) для проверки завершения
+- Не блокируйте архивацию на предупреждениях - просто информируйте и подтверждайте
+- Сохраняйте .openspec.yaml при перемещении в архив (он перемещается вместе с каталогом)
+- Показывайте четкую сводку того, что произошло
+- Если запрошена синхронизация, используйте подход openspec-sync-specs (agent-driven)
+- Если delta specs существуют, всегда запускайте оценку синхронизации и показывайте объединенную сводку перед запросом

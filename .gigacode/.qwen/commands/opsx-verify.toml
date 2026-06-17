@@ -1,108 +1,108 @@
-description = "Verify implementation matches change artifacts before archiving"
+description = "Проверить, что реализация соответствует артефактам изменения перед архивацией"
 
 prompt = """
-Verify that an implementation matches the change artifacts (specs, tasks, design).
+Проверить, что реализация соответствует артефактам изменения (specs, tasks, design).
 
-**Input**: Optionally specify a change name after `/opsx:verify` (e.g., `/opsx:verify add-auth`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
+**Ввод**: Опционально укажите имя изменения после `/opsx:verify` (например, `/opsx:verify add-auth`). Если не указано, проверьте, можно ли вывести его из контекста разговора. Если неясно или неоднозначно, ВЫ ДОЛЖНЫ запросить доступные изменения.
 
-**Steps**
+**Шаги**
 
-1. **If no change name provided, prompt for selection**
+1. **Если имя изменения не указано, запросить выбор**
 
-   Run `openspec list --json` to get available changes. Use the **AskUserQuestion tool** to let the user select.
+   Запустите `openspec list --json` для получения доступных изменений. Используйте **AskUserQuestion tool** для выбора пользователем.
 
-   Show changes that have implementation tasks (tasks artifact exists).
-   Include the schema used for each change if available.
-   Mark changes with incomplete tasks as "(In Progress)".
+   Покажите изменения, которые имеют задачи реализации (артефакт tasks существует).
+   Включите используемую схему для каждого изменения, если доступно.
+   Пометьте изменения с незавершенными задачами как "(In Progress)".
 
-   **IMPORTANT**: Do NOT guess or auto-select a change. Always let the user choose.
+   **ВАЖНО**: Не угадывайте и не выбирайте автоматически изменение. Всегда позволяйте пользователю выбрать.
 
-2. **Check status to understand the schema**
+2. **Проверка статуса для понимания схемы**
    ```bash
    openspec status --change "<name>" --json
    ```
-   Parse the JSON to understand:
-   - `schemaName`: The workflow being used (e.g., "spec-driven")
-   - `planningHome`, `changeRoot`, `artifactPaths`, and `actionContext`: path and scope context
-   - Which artifacts exist for this change
+   Разберите JSON для понимания:
+   - `schemaName`: Используемый рабочий процесс (например, "spec-driven")
+   - `planningHome`, `changeRoot`, `artifactPaths`, и `actionContext`: контекст путей и области
+   - Какие артефакты существуют для этого изменения
 
-   If status reports `actionContext.mode: "workspace-planning"`, explain that full workspace implementation verification is not supported in this slice and STOP. Do not infer repo-local implementation ownership or edit linked repos.
+   Если статус сообщает `actionContext.mode: "workspace-planning"`, объясните, что полная проверка реализации рабочей области не поддерживается в этом срезе и ОСТАНОВИТЕСЬ. Не выводите принадлежность реализации локальной для репозитория или не редактируйте связанные репозитории.
 
-3. **Get planning context and load artifacts**
+3. **Получение контекста планирования и загрузка артефактов**
 
    ```bash
    openspec instructions apply --change "<name>" --json
    ```
 
-   This returns the change directory and `contextFiles` (artifact ID -> array of concrete file paths). Read all available artifacts from `contextFiles`.
+   Это возвращает каталог изменения и `contextFiles` (artifact ID -> массив конкретных путей к файлам). Прочитайте все доступные артефакты из `contextFiles`.
 
-4. **Initialize verification report structure**
+4. **Инициализация структуры отчета проверки**
 
-   Create a report structure with three dimensions:
-   - **Completeness**: Track tasks and spec coverage
-   - **Correctness**: Track requirement implementation and scenario coverage
-   - **Coherence**: Track design adherence and pattern consistency
+   Создайте структуру отчета с тремя измерениями:
+   - **Completeness**: Отслеживание задач и покрытия spec
+   - **Correctness**: Отслеживание реализации требования и покрытия сценария
+   - **Coherence**: Отслеживание соответствия дизайну и согласованности шаблонов
 
-   Each dimension can have CRITICAL, WARNING, or SUGGESTION issues.
+   Каждое измерение может иметь проблемы CRITICAL, WARNING или SUGGESTION.
 
-5. **Verify Completeness**
+5. **Проверка Completeness**
 
    **Task Completion**:
-   - If `contextFiles.tasks` exists, read every file path in it
-   - Parse checkboxes: `- [ ]` (incomplete) vs `- [x]` (complete)
-   - Count complete vs total tasks
-   - If incomplete tasks exist:
-     - Add CRITICAL issue for each incomplete task
-     - Recommendation: "Complete task: <description>" or "Mark as done if already implemented"
+   - Если `contextFiles.tasks` существует, прочитайте каждый путь к файлу в нем
+   - Разберите флажки: `- [ ]` (незавершенные) против `- [x]` (завершенные)
+   - Подсчитайте завершенные и общее количество задач
+   - Если существуют незавершенные задачи:
+     - Добавьте CRITICAL проблему для каждой незавершенной задачи
+     - Рекомендация: "Complete task: <description>" или "Mark as done if already implemented"
 
    **Spec Coverage**:
-   - If delta specs exist in `contextFiles.specs`:
-     - Extract all requirements (marked with "### Requirement:")
-     - For each requirement:
-       - Search codebase for keywords related to the requirement
-       - Assess if implementation likely exists
-     - If requirements appear unimplemented:
-       - Add CRITICAL issue: "Requirement not found: <requirement name>"
-       - Recommendation: "Implement requirement X: <description>"
+   - Если delta specs существуют в `contextFiles.specs`:
+     - Извлеките все требования (помеченные с "### Requirement:")
+     - Для каждого требования:
+       - Поиск в кодовой базе по ключевым словам, связанным с требованием
+       - Оцените, вероятно ли реализация существует
+     - Если требования кажутся нереализованными:
+       - Добавьте CRITICAL проблему: "Requirement not found: <requirement name>"
+       - Рекомендация: "Implement requirement X: <description>"
 
-6. **Verify Correctness**
+6. **Проверка Correctness**
 
    **Requirement Implementation Mapping**:
-   - For each requirement from delta specs:
-     - Search codebase for implementation evidence
-     - If found, note file paths and line ranges
-     - Assess if implementation matches requirement intent
-     - If divergence detected:
-       - Add WARNING: "Implementation may diverge from spec: <details>"
-       - Recommendation: "Review <file>:<lines> against requirement X"
+   - Для каждого требования из delta specs:
+     - Поиск в кодовой базе доказательств реализации
+     - Если найдено, отметьте пути файлов и диапазоны строк
+     - Оцените, соответствует ли реализация намерению требования
+     - Если обнаружено расхождение:
+       - Добавьте WARNING: "Implementation may diverge from spec: <details>"
+       - Рекомендация: "Review <file>:<lines> against requirement X"
 
    **Scenario Coverage**:
-   - For each scenario in delta specs (marked with "#### Scenario:"):
-     - Check if conditions are handled in code
-     - Check if tests exist covering the scenario
-     - If scenario appears uncovered:
-       - Add WARNING: "Scenario not covered: <scenario name>"
-       - Recommendation: "Add test or implementation for scenario: <description>"
+   - Для каждого сценария в delta specs (помеченного с "#### Scenario:"):
+     - Проверьте, обрабатываются ли условия в коде
+     - Проверьте, существуют ли тесты, покрывающие сценарий
+     - Если сценарий кажется непокрытым:
+       - Добавьте WARNING: "Scenario not covered: <scenario name>"
+       - Рекомендация: "Add test or implementation for scenario: <description>"
 
-7. **Verify Coherence**
+7. **Проверка Coherence**
 
    **Design Adherence**:
-   - If `contextFiles.design` exists:
-     - Extract key decisions (look for sections like "Decision:", "Approach:", "Architecture:")
-     - Verify implementation follows those decisions
-     - If contradiction detected:
-       - Add WARNING: "Design decision not followed: <decision>"
-       - Recommendation: "Update implementation or revise design.md to match reality"
-   - If no design.md: Skip design adherence check, note "No design.md to verify against"
+   - Если `contextFiles.design` существует:
+     - Извлеките ключевые решения (ищите разделы, такие как "Decision:", "Approach:", "Architecture:")
+     - Проверьте, следует ли реализация этим решениям
+     - Если обнаружено противоречие:
+       - Добавьте WARNING: "Design decision not followed: <decision>"
+       - Рекомендация: "Update implementation or revise design.md to match reality"
+   - Если нет design.md: Пропустите проверку соответствия дизайну, отметьте "No design.md to verify against"
 
    **Code Pattern Consistency**:
-   - Review new code for consistency with project patterns
-   - Check file naming, directory structure, coding style
-   - If significant deviations found:
-     - Add SUGGESTION: "Code pattern deviation: <details>"
-     - Recommendation: "Consider following project pattern: <example>"
+   - Просмотрите новый код на согласованность с шаблонами проекта
+   - Проверьте именование файлов, структуру каталогов, стиль кодирования
+   - Если найдены значительные отклонения:
+     - Добавьте SUGGESTION: "Code pattern deviation: <details>"
+     - Рекомендация: "Consider following project pattern: <example>"
 
-8. **Generate Verification Report**
+8. **Генерация отчета проверки**
 
    **Summary Scorecard**:
    ```
@@ -116,42 +116,42 @@ Verify that an implementation matches the change artifacts (specs, tasks, design
    | Coherence    | Followed/Issues  |
    ```
 
-   **Issues by Priority**:
+   **Проблемы по приоритету**:
 
    1. **CRITICAL** (Must fix before archive):
-      - Incomplete tasks
-      - Missing requirement implementations
-      - Each with specific, actionable recommendation
+      - Незавершенные задачи
+      - Отсутствующие реализации требований
+      - Каждая с конкретной, выполнимой рекомендацией
 
    2. **WARNING** (Should fix):
-      - Spec/design divergences
-      - Missing scenario coverage
-      - Each with specific recommendation
+      - Расхождения spec/design
+      - Отсутствующее покрытие сценариев
+      - Каждая с конкретной рекомендацией
 
    3. **SUGGESTION** (Nice to fix):
-      - Pattern inconsistencies
-      - Minor improvements
-      - Each with specific recommendation
+      - Несогласованности шаблонов
+      - Незначительные улучшения
+      - Каждая с конкретной рекомендацией
 
    **Final Assessment**:
-   - If CRITICAL issues: "X critical issue(s) found. Fix before archiving."
-   - If only warnings: "No critical issues. Y warning(s) to consider. Ready for archive (with noted improvements)."
-   - If all clear: "All checks passed. Ready for archive."
+   - Если CRITICAL проблемы: "X critical issue(s) found. Fix before archiving."
+   - Если только warnings: "No critical issues. Y warning(s) to consider. Ready for archive (with noted improvements)."
+   - Если все ясно: "All checks passed. Ready for archive."
 
 **Verification Heuristics**
 
-- **Completeness**: Focus on objective checklist items (checkboxes, requirements list)
-- **Correctness**: Use keyword search, file path analysis, reasonable inference - don't require perfect certainty
-- **Coherence**: Look for glaring inconsistencies, don't nitpick style
-- **False Positives**: When uncertain, prefer SUGGESTION over WARNING, WARNING over CRITICAL
-- **Actionability**: Every issue must have a specific recommendation with file/line references where applicable
+- **Completeness**: Сфокусируйтесь на объективных пунктах контрольного списка (флажки, список требований)
+- **Correctness**: Используйте поиск по ключевым словам, анализ путей файлов, разумное предположение - не требуйте идеальной уверенности
+- **Coherence**: Ищите явные несоответствия, не придирайтесь к стилю
+- **False Positives**: Когда не уверены, предпочитайте SUGGESTION над WARNING, WARNING над CRITICAL
+- **Actionability**: Каждая проблема должна иметь конкретную рекомендацию с ссылками на файл/строки, где применимо
 
 **Graceful Degradation**
 
-- If only tasks.md exists: verify task completion only, skip spec/design checks
-- If tasks + specs exist: verify completeness and correctness, skip design
-- If full artifacts: verify all three dimensions
-- Always note which checks were skipped and why
+- Если существует только tasks.md: проверьте только завершение задач, пропустите проверки spec/design
+- Если существуют tasks + specs: проверьте completeness и correctness, пропустите design
+- Если полные артефакты: проверьте все три измерения
+- Всегда отмечайте, какие проверки были пропущены и почему
 
 **Output Format**
 

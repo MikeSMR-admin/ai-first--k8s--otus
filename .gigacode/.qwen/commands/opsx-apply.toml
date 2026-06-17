@@ -1,88 +1,88 @@
-description = "Implement tasks from an OpenSpec change (Experimental)"
+description = "Реализовать задачи из изменений OpenSpec (Экспериментально)"
 
 prompt = """
-Implement tasks from an OpenSpec change.
+Реализовать задачи из изменений OpenSpec.
 
-**Input**: Optionally specify a change name (e.g., `/opsx:apply add-auth`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
+**Ввод**: Опционально укажите имя изменения (например, `/opsx:apply add-auth`). Если не указано, проверьте, можно ли вывести его из контекста разговора. Если неясно или неоднозначно, ВЫ ДОЛЖНЫ запросить доступные изменения.
 
-**Steps**
+**Шаги**
 
-1. **Select the change**
+1. **Выбор изменения**
 
-   If a name is provided, use it. Otherwise:
-   - Infer from conversation context if the user mentioned a change
-   - Auto-select if only one active change exists
-   - If ambiguous, run `openspec list --json` to get available changes and use the **AskUserQuestion tool** to let the user select
+   Если имя предоставлено, используйте его. В противном случае:
+   - Выведите из контекста разговора, если пользователь упомянул изменение
+   - Автоматически выберите, если существует только одно активное изменение
+   - Если неоднозначно, запустите `openspec list --json` для получения доступных изменений и используйте **AskUserQuestion tool** для выбора пользователем
 
-   Always announce: "Using change: <name>" and how to override (e.g., `/opsx:apply <other>`).
+   Всегда объявляйте: "Using change: <name>" и как переопределить (например, `/opsx:apply <other>`).
 
-2. **Check status to understand the schema**
+2. **Проверка статуса для понимания схемы**
    ```bash
    openspec status --change "<name>" --json
    ```
-   Parse the JSON to understand:
-   - `schemaName`: The workflow being used (e.g., "spec-driven")
-   - `planningHome`, `changeRoot`, and `actionContext`: planning scope and edit constraints
-   - Which artifact contains the tasks (typically "tasks" for spec-driven, check status for others)
+   Разберите JSON для понимания:
+   - `schemaName`: Используемый рабочий процесс (например, "spec-driven")
+   - `planningHome`, `changeRoot`, и `actionContext`: контекст планирования и ограничения редактирования
+   - Какой артефакт содержит задачи (обычно "tasks" для spec-driven, проверьте статус для других)
 
-3. **Get apply instructions**
+3. **Получение инструкций по применению**
 
    ```bash
    openspec instructions apply --change "<name>" --json
    ```
 
-   This returns:
-   - `contextFiles`: artifact ID -> array of concrete file paths (varies by schema)
-   - Progress (total, complete, remaining)
-   - Task list with status
-   - Dynamic instruction based on current state
+   Это возвращает:
+   - `contextFiles`: artifact ID -> массив конкретных путей к файлам (варьируется по схеме)
+   - Прогресс (всего, выполнено, осталось)
+   - Список задач со статусом
+   - Динамическая инструкция на основе текущего состояния
 
-   **Handle states:**
-   - If `state: "blocked"` (missing artifacts): show message, suggest using `/opsx:continue`
-   - If `state: "all_done"`: congratulate, suggest archive
-   - Otherwise: proceed to implementation
+   **Обработка состояний:**
+   - Если `state: "blocked"` (отсутствуют артефакты): показать сообщение, предложить использовать `/opsx:continue`
+   - Если `state: "all_done"`: поздравить, предложить архивацию
+   - Иначе: приступить к реализации
 
-   **Workspace guard:** If status JSON reports `actionContext.mode: "workspace-planning"` and `allowedEditRoots` is empty, explain that full workspace apply is not supported in this slice. Treat linked repos and folders as read-only context, ask the user to select an affected area through an explicit implementation workflow, and STOP before editing files.
+   **Охрана рабочей области:** Если статус JSON сообщает `actionContext.mode: "workspace-planning"` и `allowedEditRoots` пуст, объясните, что полное применение рабочей области не поддерживается в этом срезе. Обращайте связанные репозитории и папки как контекст только для чтения, запросите пользователя выбрать затронутую область через явный рабочий процесс реализации и ОСТАНОВИТЕСЬ перед редактированием файлов.
 
-4. **Read context files**
+4. **Чтение файлов контекста**
 
-   Read every file path listed under `contextFiles` from the apply instructions output.
-   The files depend on the schema being used:
+   Прочитайте каждый путь к файлу, перечисленный в `contextFiles` из вывода инструкций по применению.
+   Файлы зависят от используемой схемы:
    - **spec-driven**: proposal, specs, design, tasks
-   - Other schemas: follow the contextFiles from CLI output
+   - Другие схемы: следуйте contextFiles из вывода CLI
 
-5. **Show current progress**
+5. **Показ текущего прогресса**
 
-   Display:
-   - Schema being used
-   - Progress: "N/M tasks complete"
-   - Remaining tasks overview
-   - Dynamic instruction from CLI
+   Отобразите:
+   - Используемую схему
+   - Прогресс: "N/M tasks complete"
+   - Обзор оставшихся задач
+   - Динамическую инструкцию из CLI
 
-6. **Implement tasks (loop until done or blocked)**
+6. **Реализация задач (циклически до завершения или блокировки)**
 
-   For each pending task:
-   - Show which task is being worked on
-   - Make the code changes required
-   - Keep changes minimal and focused
-   - Mark task complete in the tasks file: `- [ ]` → `- [x]`
-   - Continue to next task
+   Для каждой отложенной задачи:
+   - Покажите, над какой задачей работаете
+   - Выполните требуемые изменения кода
+   - Держите изменения минимальными и сфокусированными
+   - Пометьте задачу как выполненную в файле задач: `- [ ]` → `- [x]`
+   - Продолжите к следующей задаче
 
-   **Pause if:**
-   - Task is unclear → ask for clarification
-   - Implementation reveals a design issue → suggest updating artifacts
-   - Error or blocker encountered → report and wait for guidance
-   - User interrupts
+   **Пауза если:**
+   - Задача неясна → запросить уточнение
+   - Реализация выявляет проблему дизайна → предложить обновить артефакты
+   - Ошибка или блокировка возникла → сообщить и ждать руководства
+   - Пользователь прерывает
 
-7. **On completion or pause, show status**
+7. **При завершении или паузе, показать статус**
 
-   Display:
-   - Tasks completed this session
-   - Overall progress: "N/M tasks complete"
-   - If all done: suggest archive
-   - If paused: explain why and wait for guidance
+   Отобразите:
+   - Задачи выполненные в этой сессии
+   - Общий прогресс: "N/M tasks complete"
+   - Если все сделано: предложить архивацию
+   - Если на паузе: объяснить почему и ждать руководства
 
-**Output During Implementation**
+**Вывод во время реализации**
 
 ```
 ## Implementing: <change-name> (schema: <schema-name>)
@@ -96,7 +96,7 @@ Working on task 4/7: <task description>
 ✓ Task complete
 ```
 
-**Output On Completion**
+**Вывод при завершении**
 
 ```
 ## Implementation Complete
@@ -113,7 +113,7 @@ Working on task 4/7: <task description>
 All tasks complete! You can archive this change with `/opsx:archive`.
 ```
 
-**Output On Pause (Issue Encountered)**
+**Вывод при паузе (Встречена проблема)**
 
 ```
 ## Implementation Paused
@@ -133,19 +133,19 @@ All tasks complete! You can archive this change with `/opsx:archive`.
 What would you like to do?
 ```
 
-**Guardrails**
-- Keep going through tasks until done or blocked
-- Always read context files before starting (from the apply instructions output)
-- If task is ambiguous, pause and ask before implementing
-- If implementation reveals issues, pause and suggest artifact updates
-- Keep code changes minimal and scoped to each task
-- Update task checkbox immediately after completing each task
-- Pause on errors, blockers, or unclear requirements - don't guess
-- Use contextFiles from CLI output, don't assume specific file names
+**Охранные меры**
+- Продолжайте проходить задачи до завершения или блокировки
+- Всегда читайте файлы контекста перед началом (из вывода инструкций по применению)
+- Если задача неясна, остановитесь и запросите перед реализацией
+- Если реализация выявляет проблемы, остановитесь и предложите обновления артефактов
+- Держите изменения кода минимальными и сфокусированными на каждой задаче
+- Обновляйте флажок задачи сразу после завершения каждой задачи
+- Остановитесь на ошибках, блокировках или неясных требованиях - не угадывайте
+- Используйте contextFiles из вывода CLI, не предполагайте конкретные имена файлов
 
-**Fluid Workflow Integration**
+**Интеграция гибкого рабочего процесса**
 
-This skill supports the "actions on a change" model:
+Этот навык поддерживает модель "actions on a change":
 
 - **Can be invoked anytime**: Before all artifacts are done (if tasks exist), after partial implementation, interleaved with other actions
 - **Allows artifact updates**: If implementation reveals design issues, suggest updating artifacts - not phase-locked, work fluidly

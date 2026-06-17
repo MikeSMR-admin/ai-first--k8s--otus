@@ -1,81 +1,81 @@
-description = "Sync delta specs from a change to main specs"
+description = "Синхронизировать delta specs из изменения в основные specs"
 
 prompt = """
-Sync delta specs from a change to main specs.
+Синхронизировать delta specs из изменения в основные specs.
 
-This is an **agent-driven** operation - you will read delta specs and directly edit main specs to apply the changes. This allows intelligent merging (e.g., adding a scenario without copying the entire requirement).
+Это операция, **управляемая агентом** - вы будете читать delta specs и напрямую редактировать основные specs для применения изменений. Это позволяет интеллектуальное слияние (например, добавление сценария без копирования всего требования).
 
-**Input**: Optionally specify a change name after `/opsx:sync` (e.g., `/opsx:sync add-auth`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
+**Ввод**: Опционально укажите имя изменения после `/opsx:sync` (например, `/opsx:sync add-auth`). Если не указано, проверьте, можно ли вывести его из контекста разговора. Если неясно или неоднозначно, ВЫ ДОЛЖНЫ запросить доступные изменения.
 
-**Steps**
+**Шаги**
 
-1. **If no change name provided, prompt for selection**
+1. **Если имя изменения не указано, запросить выбор**
 
-   Run `openspec list --json` to get available changes. Use the **AskUserQuestion tool** to let the user select.
+   Запустите `openspec list --json` для получения доступных изменений. Используйте **AskUserQuestion tool** для выбора пользователем.
 
-   Show changes that have delta specs (under `specs/` directory).
+   Покажите изменения, которые имеют delta specs (в каталоге `specs/`).
 
-   **IMPORTANT**: Do NOT guess or auto-select a change. Always let the user choose.
+   **ВАЖНО**: Не угадывайте и не выбирайте автоматически изменение. Всегда позволяйте пользователю выбрать.
 
-2. **Resolve change context**
+2. **Разрешение контекста изменения**
 
-   Run:
+   Запустите:
    ```bash
    openspec status --change "<name>" --json
    ```
 
-   If status reports `actionContext.mode: "workspace-planning"`, explain that workspace spec sync is not supported in this slice and STOP. Do not fall back to repo-local paths or edit linked repos.
+   Если статус сообщает `actionContext.mode: "workspace-planning"`, объясните, что синхронизация spec рабочей области не поддерживается в этом срезе и ОСТАНОВИТЕСЬ. Не возвращайтесь к путям, локальным для репозитория, или не редактируйте связанные репозитории.
 
-3. **Find delta specs**
+3. **Поиск delta specs**
 
-   Use `artifactPaths.specs.existingOutputPaths` from the status JSON as the list of delta spec files.
+   Используйте `artifactPaths.specs.existingOutputPaths` из JSON статуса как список файлов delta spec.
 
-   Each delta spec file contains sections like:
-   - `## ADDED Requirements` - New requirements to add
-   - `## MODIFIED Requirements` - Changes to existing requirements
-   - `## REMOVED Requirements` - Requirements to remove
-   - `## RENAMED Requirements` - Requirements to rename (FROM:/TO: format)
+   Каждый файл delta spec содержит разделы, такие как:
+   - `## ADDED Requirements` - Новые требования для добавления
+   - `## MODIFIED Requirements` - Изменения к существующим требованиям
+   - `## REMOVED Requirements` - Требования для удаления
+   - `## RENAMED Requirements` - Требования для переименования (формат FROM:/TO:)
 
-   If no delta specs found, inform user and stop.
+   Если delta specs не найдены, сообщите пользователю и остановитесь.
 
-4. **For each delta spec, apply changes to main specs**
+4. **Для каждого delta spec применить изменения к основным specs**
 
-   For each repo-local capability delta spec path returned by the CLI:
+   Для каждого пути delta spec capability, локального для репозитория, возвращаемого CLI:
 
-   a. **Read the delta spec** to understand the intended changes
+   a. **Прочитайте delta spec** для понимания намеренных изменений
 
-   b. **Read the main spec** at `openspec/specs/<capability>/spec.md` (may not exist yet)
+   b. **Прочитайте основной spec** по пути `openspec/specs/<capability>/spec.md` (может еще не существовать)
 
-   c. **Apply changes intelligently**:
+   c. **Примените изменения интеллектуально**:
 
       **ADDED Requirements:**
-      - If requirement doesn't exist in main spec → add it
-      - If requirement already exists → update it to match (treat as implicit MODIFIED)
+      - Если требование не существует в основном spec → добавьте его
+      - Если требование уже существует → обновите его для соответствия (рассматривайте как неявное MODIFIED)
 
       **MODIFIED Requirements:**
-      - Find the requirement in main spec
-      - Apply the changes - this can be:
-        - Adding new scenarios (don't need to copy existing ones)
-        - Modifying existing scenarios
-        - Changing the requirement description
-      - Preserve scenarios/content not mentioned in the delta
+      - Найдите требование в основном spec
+      - Примените изменения - это может быть:
+        - Добавление новых сценариев (не нужно копировать существующие)
+        - Модификация существующих сценариев
+        - Изменение описания требования
+      - Сохраните сценарии/контент, не упомянутые в delta
 
       **REMOVED Requirements:**
-      - Remove the entire requirement block from main spec
+      - Удалите весь блок требования из основного spec
 
       **RENAMED Requirements:**
-      - Find the FROM requirement, rename to TO
+      - Найдите FROM требование, переименуйте в TO
 
-   d. **Create new main spec** if capability doesn't exist yet:
-      - Create `openspec/specs/<capability>/spec.md`
-      - Add Purpose section (can be brief, mark as TBD)
-      - Add Requirements section with the ADDED requirements
+   d. **Создайте новый основной spec**, если capability еще не существует:
+      - Создайте `openspec/specs/<capability>/spec.md`
+      - Добавьте раздел Purpose (может быть кратким, пометьте как TBD)
+      - Добавьте раздел Requirements с ADDED требованиями
 
-5. **Show summary**
+5. **Показать сводку**
 
-   After applying all changes, summarize:
-   - Which capabilities were updated
-   - What changes were made (requirements added/modified/removed/renamed)
+   После применения всех изменений, суммируйте:
+   - Какие capabilities были обновлены
+   - Какие изменения были сделаны (требования добавлены/модифицированы/удалены/переименованы)
 
 **Delta Spec Format Reference**
 
