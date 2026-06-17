@@ -1,91 +1,91 @@
 ---
 name: openspec-sync-specs
-description: Sync delta specs from a change to main specs. Use when the user wants to update main specs with changes from a delta spec, without archiving the change.
+description: Синхронизировать дельта-спецификации из изменения в основные спецификации. Используйте, когда пользователь хочет обновить основные спецификации изменениями из дельта-спецификации, не архивируя изменение.
 license: MIT
-compatibility: Requires openspec CLI.
+compatibility: Требуется CLI openspec.
 metadata:
   author: openspec
   version: "1.0"
   generatedBy: "1.4.1"
 ---
 
-Sync delta specs from a change to main specs.
+Синхронизировать дельта-спецификации из изменения в основные спецификации.
 
-This is an **agent-driven** operation - you will read delta specs and directly edit main specs to apply the changes. This allows intelligent merging (e.g., adding a scenario without copying the entire requirement).
+Это операция, **управляемая агентом** — вы будете считывать дельта-спецификации и напрямую редактировать основные спецификации для применения изменений. Это позволяет выполнять интеллектуальное слияние (например, добавлять сценарий без копирования всего требования).
 
-**Input**: Optionally specify a change name. If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
+**Входные данные**: При необходимости укажите имя изменения. Если опущено, проверьте, можно ли вывести его из контекста разговора. Если неясно или неоднозначно, ВЫ ДОЛЖНЫ запросить доступные изменения.
 
-**Steps**
+**Шаги**
 
-1. **If no change name provided, prompt for selection**
+1. **Если имя изменения не указано, запросите выбор**
 
-   Run `openspec list --json` to get available changes. Use the **AskUserQuestion tool** to let the user select.
+   Выполните `openspec list --json` для получения доступных изменений. Используйте **инструмент AskUserQuestion** для выбора пользователем.
 
-   Show changes that have delta specs (under `specs/` directory).
+   Покажите изменения, имеющие дельта-спецификации (в каталоге `specs/`).
 
-   **IMPORTANT**: Do NOT guess or auto-select a change. Always let the user choose.
+   **ВАЖНО**: Не угадывайте и не выбирайте автоматически изменение. Всегда позволяйте пользователю выбрать.
 
-2. **Resolve change context**
+2. **Определите контекст изменения**
 
-   Run:
+   Выполните:
    ```bash
    openspec status --change "<name>" --json
    ```
 
-   If status reports `actionContext.mode: "workspace-planning"`, explain that workspace spec sync is not supported in this slice and STOP. Do not fall back to repo-local paths or edit linked repos.
+   Если статус сообщает `actionContext.mode: "workspace-planning"`, объясните, что синхронизация спецификаций рабочей области не поддерживается в этом срезе и ПРИОСТАНОВИТЕСЬ. Не переходите к путям, локальным для репозитория, или не редактируйте связанные репозитории.
 
-3. **Find delta specs**
+3. **Найдите дельта-спецификации**
 
-   Use `artifactPaths.specs.existingOutputPaths` from the status JSON as the list of delta spec files.
+   Используйте `artifactPaths.specs.existingOutputPaths` из JSON статуса как список файлов дельта-спецификаций.
 
-   Each delta spec file contains sections like:
-   - `## ADDED Requirements` - New requirements to add
-   - `## MODIFIED Requirements` - Changes to existing requirements
-   - `## REMOVED Requirements` - Requirements to remove
-   - `## RENAMED Requirements` - Requirements to rename (FROM:/TO: format)
+   Каждый файл дельта-спецификации содержит разделы:
+   - `## ADDED Requirements` — Новые требования для добавления
+   - `## MODIFIED Requirements` — Изменения существующих требований
+   - `## REMOVED Requirements` — Требования для удаления
+   - `## RENAMED Requirements` — Требования для переименования (формат FROM:/TO:)
 
-   If no delta specs found, inform user and stop.
+   Если дельта-спецификации не найдены, сообщите пользователю и остановитесь.
 
-4. **For each delta spec, apply changes to main specs**
+4. **Для каждой дельта-спецификации примените изменения в основные спецификации**
 
-   For each repo-local capability delta spec path returned by the CLI:
+   Для каждого пути локального дельта-спецификации возможностей, возвращаемого CLI:
 
-   a. **Read the delta spec** to understand the intended changes
+   a. **Считайте дельта-спецификацию**, чтобы понять предполагаемые изменения
 
-   b. **Read the main spec** at `openspec/specs/<capability>/spec.md` (may not exist yet)
+   b. **Считайте основную спецификацию** в `openspec/specs/<capability>/spec.md` (может еще не существовать)
 
-   c. **Apply changes intelligently**:
+   c. **Примените изменения интеллектуально**:
 
-      **ADDED Requirements:**
-      - If requirement doesn't exist in main spec → add it
-      - If requirement already exists → update it to match (treat as implicit MODIFIED)
+      **ADDED Requirements (Добавленные требования):**
+      - Если требования не существует в основной спецификации → добавьте его
+      - Если требования уже существует → обновите его для соответствия (рассматривайте как неявное MODIFIED)
 
-      **MODIFIED Requirements:**
-      - Find the requirement in main spec
-      - Apply the changes - this can be:
-        - Adding new scenarios (don't need to copy existing ones)
-        - Modifying existing scenarios
-        - Changing the requirement description
-      - Preserve scenarios/content not mentioned in the delta
+      **MODIFIED Requirements (Измененные требования):**
+      - Найдите требование в основной спецификации
+      - Примените изменения — это может быть:
+        - Добавление новых сценариев (не нужно копировать существующие)
+        - Изменение существующих сценариев
+        - Изменение описания требования
+      - Сохраняйте сценарии/контент, не упомянутые в дельта-спецификации
 
-      **REMOVED Requirements:**
-      - Remove the entire requirement block from main spec
+      **REMOVED Requirements (Удаленные требования):**
+      - Удалите весь блок требования из основной спецификации
 
-      **RENAMED Requirements:**
-      - Find the FROM requirement, rename to TO
+      **RENAMED Requirements (Переименованные требования):**
+      - Найдите FROM требование, переименуйте в TO
 
-   d. **Create new main spec** if capability doesn't exist yet:
-      - Create `openspec/specs/<capability>/spec.md`
-      - Add Purpose section (can be brief, mark as TBD)
-      - Add Requirements section with the ADDED requirements
+   d. **Создайте новую основную спецификацию**, если возможность еще не существует:
+      - Создайте `openspec/specs/<capability>/spec.md`
+      - Добавьте раздел Purpose (может быть кратким, пометить как TBD)
+      - Добавьте раздел Requirements с ADDED требованиями
 
-5. **Show summary**
+5. **Покажите резюме**
 
-   After applying all changes, summarize:
-   - Which capabilities were updated
-   - What changes were made (requirements added/modified/removed/renamed)
+   После применения всех изменений резюмируйте:
+   - Какие возможности были обновлены
+   - Какие изменения были сделаны (требования добавлены/изменены/удалены/переименованы)
 
-**Delta Spec Format Reference**
+**Ссылка на формат дельта-спецификации**
 
 ```markdown
 ## ADDED Requirements
@@ -114,14 +114,14 @@ The system SHALL do something new.
 - TO: `### Requirement: New Name`
 ```
 
-**Key Principle: Intelligent Merging**
+**Ключевой принцип: Интеллектуальное слияние**
 
-Unlike programmatic merging, you can apply **partial updates**:
-- To add a scenario, just include that scenario under MODIFIED - don't copy existing scenarios
-- The delta represents *intent*, not a wholesale replacement
-- Use your judgment to merge changes sensibly
+В отличие от программного слияния, вы можете применять **частичные обновления**:
+- Чтобы добавить сценарий, просто включите этот сценарий под MODIFIED — не копируйте существующие сценарии
+- Дельта представляет *намерение*, а не полную замену
+- Используйте свой суд для разумного слияния изменений
 
-**Output On Success**
+**Выходные данные при успехе**
 
 ```
 ## Specs Synced: <change-name>
@@ -139,9 +139,9 @@ Updated main specs:
 Main specs are now updated. The change remains active - archive when implementation is complete.
 ```
 
-**Guardrails**
-- Read both delta and main specs before making changes
-- Preserve existing content not mentioned in delta
-- If something is unclear, ask for clarification
-- Show what you're changing as you go
-- The operation should be idempotent - running twice should give same result
+**Ограничители**
+- Считайте и дельта-спецификацию, и основную спецификацию перед внесением изменений
+- Сохраняйте существующий контент, не упомянутый в дельта-спецификации
+- Если что-то неясно, запросите уточнение
+- Покажите, что вы меняете по ходу выполнения
+- Операция должна быть идемпотентной — запуск дважды должен дать тот же результат
