@@ -1,74 +1,74 @@
 ---
 name: openspec-new-change
-description: Start a new OpenSpec change using the experimental artifact workflow. Use when the user wants to create a new feature, fix, or modification with a structured step-by-step approach.
+description: Начать новое изменение OpenSpec, используя экспериментальный подход на основе артефактов. Используйте, когда пользователь хочет создать новую функцию, исправление или модификацию со структурированным пошаговым подходом.
 license: MIT
-compatibility: Requires openspec CLI.
+compatibility: Требуется openspec CLI.
 metadata:
   author: openspec
   version: "1.0"
   generatedBy: "1.4.1"
 ---
 
-Start a new change using the experimental artifact-driven approach.
+Начать новое изменение, используя экспериментальный подход на основе артефактов.
 
-**Input**: The user's request should include a change name (kebab-case) OR a description of what they want to build.
+**Ввод**: Запрос пользователя должен включать имя изменения (kebab-case) ИЛИ описание того, что он хочет создать.
 
-**Steps**
+**Шаги**
 
-1. **If no clear input provided, ask what they want to build**
+1. **Если четкий ввод не предоставлен, спросите, что он хочет создать**
 
-   Use the **AskUserQuestion tool** (open-ended, no preset options) to ask:
-   > "What change do you want to work on? Describe what you want to build or fix."
+   Используйте **AskUserQuestion tool** (открытый вопрос, без предустановленных вариантов) для вопроса:
+   > "Какое изменение вы хотите сделать? Опишите то, что вы хотите создать или исправить."
 
-   From their description, derive a kebab-case name (e.g., "add user authentication" → `add-user-auth`).
+   Из их описания выведите имя в формате kebab-case (например, "add user authentication" → `add-user-auth`).
 
-   **IMPORTANT**: Do NOT proceed without understanding what the user wants to build.
+   **ВАЖНО**: Не продолжайте, пока не поймете, что хочет создать пользователь.
 
-2. **Determine the workflow schema**
+2. **Определить схему рабочего процесса**
 
-   Use the default schema (omit `--schema`) unless the user explicitly requests a different workflow.
+   Используйте схему по умолчанию (пропустите `--schema`), если пользователь явно не запросит другой рабочий процесс.
 
-   **Use a different schema only if the user mentions:**
-   - A specific schema name → use `--schema <name>`
-   - "show workflows" or "what workflows" → run `openspec schemas --json` and let them choose
+   **Используйте другую схему только если пользователь упоминает:**
+   - Конкретное имя схемы → используйте `--schema <name>`
+   - "show workflows" или "what workflows" → запустите `openspec schemas --json` и дайте им выбрать
 
-   **Otherwise**: Omit `--schema` to use the default.
+   **В противном случае**: Пропустите `--schema`, чтобы использовать схему по умолчанию.
 
-3. **Create the change directory**
+3. **Создать каталог изменения**
    ```bash
    openspec new change "<name>"
    ```
-   Add `--schema <name>` only if the user requested a specific workflow.
-   This creates a scaffolded change in the planning home resolved by the CLI.
+   Добавьте `--schema <name>` только если пользователь запросил конкретный рабочий процесс.
+   Это создаст каркас изменения в домене планирования, разрешенном CLI.
 
-4. **Show the artifact status**
+4. **Показать статус артефакта**
    ```bash
    openspec status --change "<name>" --json
    ```
-   Use the returned `planningHome`, `changeRoot`, `artifactPaths`, and `nextSteps` instead of assuming repo-local paths.
+   Используйте возвращенные `planningHome`, `changeRoot`, `artifactPaths` и `nextSteps` вместо предположения путей в локальном репозитории.
 
-5. **Get instructions for the first artifact**
-   The first artifact depends on the schema (e.g., `proposal` for spec-driven).
-   Check the status output to find the first artifact with status "ready".
+5. **Получить инструкции для первого артефакта**
+   Первый артефакт зависит от схемы (например, `proposal` для spec-driven).
+   Проверьте вывод статуса, чтобы найти первый артефакт со статусом "ready".
    ```bash
    openspec instructions <first-artifact-id> --change "<name>"
    ```
-   This outputs the template and context for creating the first artifact.
+   Это выведет шаблон и контекст для создания первого артефакта.
 
-6. **STOP and wait for user direction**
+6. **STOP и ждать указаний пользователя**
 
-**Output**
+**Вывод**
 
-After completing the steps, summarize:
-- Change name and location
-- Schema/workflow being used and its artifact sequence
-- Current status (0/N artifacts complete)
-- The template for the first artifact
-- Prompt: "Ready to create the first artifact? Just describe what this change is about and I'll draft it, or ask me to continue."
+После завершения шагов резюмируйте:
+- Имя и местоположение изменения
+- Схема/рабочий процесс и его последовательность артефактов
+- Текущий статус (0/N артефактов завершено)
+- Шаблон для первого артефакта
+- Подсказка: "Готовы создать первый артефакт? Просто опишите, о чем это изменение, и я набросаю его, или попросите продолжить."
 
-**Guardrails**
-- Do NOT create any artifacts yet - just show the instructions
-- Do NOT advance beyond showing the first artifact template
-- If the name is invalid (not kebab-case), ask for a valid name
-- If a change with that name already exists, suggest continuing that change instead
-- Pass --schema if using a non-default workflow
+**Ограничения**
+- НЕ создавайте пока никаких артефактов — просто покажите инструкции
+- НЕ продвигайтесь дальше показа шаблона первого артефакта
+- Если имя недопустимо (не kebab-case), попросите ввести допустимое имя
+- Если изменение с таким именем уже существует, предложите вместо этого продолжить это изменение
+- Передайте `--schema`, если используете нестандартный рабочий процесс
