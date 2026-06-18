@@ -104,7 +104,8 @@
 - **Конфигурация**: 
   - Тип сервиса: LoadBalancer
   - HTTPS с самоподписанным сертификатом
-  -规则: routing по host и path
+  - Правила: routing по host и path
+- **Taints**: Служба разворачивается на нодах с taint `infra-node=infra:NoSchedule`
 - **Путь трафика**: 
   ```
   User → NLB (Public IP:443) → Ingress Controller (HTTPS) → Frontend Service (HTTP:80)
@@ -119,6 +120,7 @@
   - Дашборды: Kubernetes Cluster, Application Metrics
   - Alertmanager для уведомлений
   - Порт: 3000 (LoadBalancer или NodePort)
+- **Taints**: Службы разворачиваются на нодах с taint `infra-node=infra:NoSchedule`
 - **Путь сбора данных**:
   ```
   Worker Nodes → kubelet (metrics) → Prometheus
@@ -134,6 +136,7 @@
   - Централизованное хранилище логов
   - Индексация для быстрого поиска
   - Хранение: 10Gi PVC (настраиваемо)
+- **Taints**: Службы разворачиваются на нодах с taint `infra-node=infra:NoSchedule`
 - **Путь сбора логов**:
   ```
   Container Logs → Promtail → Loki → Grafana Explore (visualization)
@@ -144,6 +147,7 @@
   - FrontendPodDown: Падение pod frontend
   - HighCPUUsage: Использование CPU > 80%
   - HighMemoryUsage: Использование памяти > 85%
+- **Taints**: Служба разворачивается на нодах с taint `infra-node=infra:NoSchedule`
 - **Интеграции**: Email, Slack (настраиваемо)
 
 ### Приложение Online Boutique
@@ -176,6 +180,7 @@ CartService → ProductCatalogService (gRPC)
 - **Kustomize**: Базовые манифесты + патчи для окружения
 - **GitHub Actions**: Автоматический деплой при изменении кода
 - **Rolling Update**: Без простоев при обновлении
+- **Taints**: Приложения разворачиваются на нодах с taint `user-app=app:NoSchedule`
 
 ### CI/CD Инфраструктура
 
@@ -258,6 +263,36 @@ CartService → ProductCatalogService (gRPC)
 2. **Платформенные сервисы**: Helm развертывает сервисы мониторинга, логирования и ingress контроллеры
 3. **Развертывание приложения**: CI/CD пайплайн (GitHub Actions) развертывает компоненты приложения
 4. **Доступ**: Публичный HTTPS доступ через Ingress с доменом nip.io
+
+## Taints и tolerations
+
+### Taints для Node
+- **user-app**: Применяется к нодам, где разворачиваются приложения-примеры (Online Boutique)
+  - `kubectl taint nodes <node-name> user-app=app:NoSchedule`
+- **infra-node**: Применяется к нодам, где разворачиваются инфраструктурные сервисы (Prometheus, Grafana, Loki, Ingress)
+  - `kubectl taint nodes <node-name> infra-node=infra:NoSchedule`
+
+### Tolerations в Deployment
+- **Приложения Online Boutique**: Добавлены tolerations для `user-app`
+- **Инфраструктурные сервисы**: Добавлены tolerations для `infra-node`
+
+Пример для приложения:
+```yaml
+tolerations:
+  - key: "user-app"
+    operator: "Equal"
+    value: "app"
+    effect: "NoSchedule"
+```
+
+Пример для инфраструктурных сервисов:
+```yaml
+tolerations:
+  - key: "infra-node"
+    operator: "Equal"
+    value: "infra"
+    effect: "NoSchedule"
+```
 
 ## CI/CD пайплайн
 
