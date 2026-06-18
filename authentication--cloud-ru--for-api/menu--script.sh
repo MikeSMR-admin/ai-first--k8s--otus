@@ -36,13 +36,13 @@ while true; do
     case $choice in
         1)
             echo ">>> Создание сервисного аккаунта..."
-            "$SCRIPT_DIR/create-sa--script"
+            "$SCRIPT_DIR/create-sa--script.sh"
             echo "Нажмите Enter для продолжения..."
             read
             ;;
         2)
             echo ">>> Удаление сервисного аккаунта..."
-            "$SCRIPT_DIR/delete-sa--script"
+            "$SCRIPT_DIR/delete-sa--script.sh"
             echo "Нажмите Enter для продолжения..."
             read
             ;;

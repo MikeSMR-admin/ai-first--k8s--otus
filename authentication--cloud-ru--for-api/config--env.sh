@@ -13,7 +13,7 @@ chmod +x config--env.sh
 # Конфигурация для работы с API Cloud.ru
 # Персональный ключ доступа (или ключ от сервисного аккаунта с правами)
 export KEY_ID="9526930d266bb01011a3684cd3584f16"
-export SECRET=""
+export SECRET="2d2c539d5567aa7c894f86aa0b7aa0f8"
 
 # ID проекта (обязателен для создания сервисного аккаунта)
 export PROJECT_ID="120acc13-f4e2-471d-a896-7ba624a70b3d"
