@@ -1,1 +1,4 @@
-authentication--cloud-ru--for-api\config--env.sh
+authentication--cloud-ru--for-api\\config--env.sh
+service-account-credentials-*.txt
+*.secret
+*.key
