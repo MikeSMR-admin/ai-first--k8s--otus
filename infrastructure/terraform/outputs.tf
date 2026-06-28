@@ -18,11 +18,12 @@ output "api_endpoint" {
   value       = cloudru_evolution_mk8s_cluster.k8s.network_configuration.cp_endpoints[0].address
 }
 
-output "kubeconfig" {
-  description = "kubeconfig для доступа к кластеру"
-  value       = cloudru_evolution_mk8s_cluster.k8s.kube_config_raw
-  sensitive   = true
-}
+# kubeconfig пока закомментирован, так как атрибут не найден
+# output "kubeconfig" {
+#   description = "kubeconfig для доступа к кластеру"
+#   value       = cloudru_evolution_mk8s_cluster.k8s.kube_config_raw
+#   sensitive   = true
+# }
 
 output "infra_node_pool_id" {
   description = "ID группы инфра-нод"
