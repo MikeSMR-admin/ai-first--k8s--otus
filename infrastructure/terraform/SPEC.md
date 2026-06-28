@@ -15,6 +15,8 @@
 1. Используется Managed Kubernetes от Cloud.ru.
 2. Конфигурация узлов (количество vCPU, RAM) должна быть достаточной для планируемой нагрузки.
 3. Настройка taints/tolerations должна быть выполнена на этапе создания кластера или после.
+4. прежде чем создавать скрипт terraform для создания кластера kubernetes, изучи эту статью: https://cloud.ru/docs/terraform-evolution/ug/topics/reference/resources/cloudru_evolution_mk8s_cluster?source-platform=Evolution#read-only . В дальнейшем используй в качестве шаблона только указанный в статье скрипт. 
+5. прежде чем создавать провайдера terraform изучи эту статью: https://cloud.ru/docs/terraform-evolution/ug/topics/quickstart?source-platform=Evolution . В дальнейшем используй в качестве шаблона только указанный в статье скрипт.
 
 ## Контекст
 - В Cloud.ru можно создать кластер с несколькими группами узлов (node groups) с разными характеристиками.
@@ -24,7 +26,9 @@
 - ID проекта в cloud.ru: 120acc13-f4e2-471d-a896-7ba624a70b3d
 
 ## Пример
-- Пример скрипта terraform и его описание для создания кластера находится здесь: infrastructure\terraform\example.md
+- Примеры скриптов terraform смотри здесь: 
+Конфигурационный файл: infrastructure\terraform\example\cloudru-cluster.tf
+Провайдер cloud.ru: infrastructure\terraform\example\main.tf
 
 ## Тесты
 - Прежде чем применять конфигурацию обязательно проверь ее
