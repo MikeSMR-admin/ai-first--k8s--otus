@@ -28,6 +28,9 @@ provider "cloudru" {
   }
 }
 
+# ============================================================
+#  Кластер (Control Plane)
+# ============================================================
 resource "cloudru_evolution_mk8s_cluster" "k8s" {
   name        = var.cluster_name
   project_id  = var.project_id
@@ -40,7 +43,7 @@ resource "cloudru_evolution_mk8s_cluster" "k8s" {
 
   sizing_configuration {
     master_count = var.master_count
-    flavor_id    = var.flavor_id
+    flavor_id    = var.master_flavor_id
   }
 
   control_plane_zones = var.control_plane_zones
@@ -55,24 +58,20 @@ resource "cloudru_evolution_mk8s_cluster" "k8s" {
   release_channel   = var.release_channel
   kube_api_internet = var.kube_api_internet
 
-  # Логирование
   logging_service {
     enabled = var.logging_service_enabled
     log_group_id     = var.logging_service_enabled ? var.log_group_id : null
     log_group_region = var.logging_service_enabled ? var.log_group_region : null
   }
 
-  # Мониторинг
   monitoring_service {
     enabled = var.monitoring_service_enabled
   }
 
-  # Аудит
   audit_service {
     enabled = var.audit_service_enabled
   }
 
-  # Управление ключами
   key_management_service {
     enabled = var.key_management_service_enabled
   }
@@ -81,5 +80,53 @@ resource "cloudru_evolution_mk8s_cluster" "k8s" {
     create = "30m"
     update = "30m"
     delete = "20m"
+  }
+}
+
+# ============================================================
+#  Группа инфра-нод (4 vCPU, 8 GB RAM) с taint
+# ============================================================
+resource "cloudru_evolution_mk8s_node_group" "infra" {
+  cluster_id = cloudru_evolution_mk8s_cluster.k8s.id
+  project_id = var.project_id
+
+  name       = "${var.cluster_name}-infra"
+  flavor_id  = var.infra_node_flavor_id
+  node_count = var.infra_node_count
+
+  # Taint для предотвращения размещения обычных подов
+  taints {
+    key    = "node-role"
+    value  = "infra"
+    effect = "NoSchedule"
+  }
+
+  # Опционально: можно добавить labels для идентификации
+  # labels = {
+  #   "node-role.kubernetes.io/infra" = "true"
+  # }
+
+  timeouts {
+    create = "20m"
+    delete = "15m"
+  }
+}
+
+# ============================================================
+#  Группа воркер-нод (2 vCPU, 4 GB RAM)
+# ============================================================
+resource "cloudru_evolution_mk8s_node_group" "workers" {
+  cluster_id = cloudru_evolution_mk8s_cluster.k8s.id
+  project_id = var.project_id
+
+  name       = "${var.cluster_name}-workers"
+  flavor_id  = var.worker_node_flavor_id
+  node_count = var.worker_node_count
+
+  # Воркер-ноды без taint — обычные поды будут размещаться здесь
+
+  timeouts {
+    create = "20m"
+    delete = "15m"
   }
 }

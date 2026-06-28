@@ -20,7 +20,7 @@ variable "project_id" {
 }
 
 # ============================================================
-#  Параметры кластера (обязательные)
+#  Параметры кластера
 # ============================================================
 variable "cluster_name" {
   description = "Имя кластера (3–60 символов)"
@@ -37,6 +37,14 @@ variable "cluster_sa_id" {
   type        = string
 }
 
+variable "control_plane_zones" {
+  description = "Список зон доступности (например, ['ru-central1-a'])"
+  type        = list(string)
+}
+
+# ============================================================
+#  Параметры мастер-узлов (control plane)
+# ============================================================
 variable "master_count" {
   description = "Количество мастер-узлов (1 или 3+)"
   type        = number
@@ -46,18 +54,41 @@ variable "master_count" {
   }
 }
 
-variable "flavor_id" {
+variable "master_flavor_id" {
   description = "Flavor для мастер-узлов"
   type        = string
 }
 
-variable "control_plane_zones" {
-  description = "Список зон доступности (например, ['ru-central1-a'])"
-  type        = list(string)
+# ============================================================
+#  Параметры групп узлов (node groups)
+# ============================================================
+
+# --- Инфра-ноды (4 vCPU, 8 GB RAM) ---
+variable "infra_node_flavor_id" {
+  description = "Flavor для инфра-нод (4 vCPU, 8 GB RAM)"
+  type        = string
+}
+
+variable "infra_node_count" {
+  description = "Количество инфра-нод"
+  type        = number
+  default     = 2
+}
+
+# --- Воркер-ноды (2 vCPU, 4 GB RAM) ---
+variable "worker_node_flavor_id" {
+  description = "Flavor для воркер-нод (2 vCPU, 4 GB RAM)"
+  type        = string
+}
+
+variable "worker_node_count" {
+  description = "Количество воркер-нод"
+  type        = number
+  default     = 3
 }
 
 # ============================================================
-#  Сетевые параметры (обязательные)
+#  Сетевые параметры
 # ============================================================
 variable "network_plugin" {
   description = "CNI-плагин: cilium или calico"
@@ -86,7 +117,7 @@ variable "services_subnet_cidr" {
 }
 
 # ============================================================
-#  Опциональные параметры (доступность, сервисы)
+#  Опциональные параметры
 # ============================================================
 variable "release_channel" {
   description = "Канал обновлений"

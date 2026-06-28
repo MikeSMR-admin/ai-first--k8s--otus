@@ -19,7 +19,17 @@ output "api_endpoint" {
 }
 
 output "kubeconfig" {
-  description = "kubeconfig для доступа к кластеру (только если kube_api_internet = true)"
+  description = "kubeconfig для доступа к кластеру"
   value       = cloudru_evolution_mk8s_cluster.k8s.kube_config_raw
   sensitive   = true
+}
+
+output "infra_node_group_id" {
+  description = "ID группы инфра-нод"
+  value       = cloudru_evolution_mk8s_node_group.infra.id
+}
+
+output "worker_node_group_id" {
+  description = "ID группы воркер-нод"
+  value       = cloudru_evolution_mk8s_node_group.workers.id
 }
