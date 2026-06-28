@@ -1,0 +1,334 @@
+resource "cloudru_evolution_mk8s_cluster" "resource_cluster" {
+  name       = "cloudru-example-cluster"
+  project_id = "00000000-0000-0000-0000-000000000000"
+
+  logging_service = {
+    enabled      = true
+    log_group_id = "00000000-0000-0000-0000-000000000000"
+  }
+
+  monitoring_service = {
+    enabled = true
+  }
+  # Варианты значений параметра release_channel:
+  # RELEASE_CHANNEL_RAPID, RELEASE_CHANNEL_REGULAR, RELEASE_CHANNEL_STABLE
+  release_channel = "RELEASE_CHANNEL_REGULAR"
+
+  audit_service = {
+    enabled = true
+  }
+
+  identity_configuration = {
+    cluster_sa_id = "00000000-0000-0000-0000-000000000000"
+  }
+
+  key_management_service = {
+    enabled = true
+    kek_id  = "00000000-0000-0000-0000-000000000000"
+  }
+  control_plane_zones   = ["00000000-0000-0000-0000-000000000000"]
+  control_plane_version = "v1.34.1"
+
+  sizing_configuration = {
+    master_count = 1
+    flavor_id    = "00000000-0000-0000-0000-000000000000"
+  }
+
+  network_configuration_request = {
+    services_subnet_cidr = "10.96.0.0/12"
+    pods_subnet_cidr     = "10.1.0.0/16"
+    kube_api_internet    = true
+
+    network_plugin = {
+      # Нужно заполнить одно из значений - cilium, calico.
+
+      cilium = {
+        enabled = true
+        # Нужно заполнить одно из значений - version, app_version.
+        version     = "1.16.7-sbc.3"
+        app_version = "v1.16.7"
+      }
+
+      calico = {
+        enabled = true
+        # Нужно заполнить одно из значений - version, app_version.
+        version     = "3.29.3-sbc.1"
+        app_version = "v3.29.3"
+      }
+    }
+    private_vip_subnet_id = "00000000-0000-0000-0000-000000000000"
+  }
+
+  bootstrap_managed_addons = {
+    horizontal_pod_autoscaling = {
+      enabled = true
+    }
+
+    persistent_disk_csi_driver = {
+      enabled = true
+    }
+
+    kube_proxy = {
+      enabled = true
+    }
+
+    coredns = {
+      enabled = true
+    }
+  }
+}
+
+
+
+Required
+control_plane_version (String) Версия Kubernetes.
+
+identity_configuration (Attributes) Конфигурация сервисного аккаунта кластера, который используется для доступа к Artifact Registry, доставке логов и метрик. (see below for nested schema)
+
+name (String) Название кластера, которое ввел пользователь. Допустимое количество символов от 3 до 60.
+
+network_configuration_request (Attributes) Сетевая конфигурация кластера и плоскости управления. (see below for nested schema)
+
+project_id (String) Идентификатор проекта.
+
+sizing_configuration (Attributes) Конфигурация размерности плоскости управления кластера и мастер-узлов. (see below for nested schema)
+
+Optional
+audit_service (Attributes) Параметры аудит-логирования событий компонентов кластера. (see below for nested schema)
+
+bootstrap_managed_addons (Attributes) Конфигурация плагинов, которые будут установлены автоматически при создании кластера. Плагины можно отключить, если вы планируете использовать сторонние решения или установить их позже. (see below for nested schema)
+
+control_plane_zones (List of String) Идентификаторы зон доступности, в которых будут размещены узлы плоскости управления. Для зонального кластера указывается идентификатор одной зоны, для регионального — три и более.
+
+key_management_service (Attributes) Параметры шифрования ресурсов кластера. (see below for nested schema)
+
+logging_service (Attributes) Параметры логирования событий компонентов кластера. (see below for nested schema)
+
+monitoring_service (Attributes) Параметры мониторинга компонентов кластера. (see below for nested schema)
+
+release_channel (String) Релизный канал, на который подписан кластер.
+
+Read-Only
+control_plane (Attributes) Конфигурация плоскости управления. (see below for nested schema)
+
+created_at (String) Дата и время создания кластера, присваивается автоматически при создании кластера.
+
+created_by (String) Идентификатор пользователя, создавшего кластер.
+
+id (String) Идентификатор кластера, присваивается автоматически при создании кластера.
+
+network_configuration (Attributes) Сетевая конфигурация кластера. (see below for nested schema)
+
+node_pools (Attributes) Информация о группах узлов. (see below for nested schema)
+
+status (String) Состояние кластера (мастер-узлов). Возможные значения: * OBJECT_STATUS_PENDING — кластер в ожидании подготовки к запуску. * OBJECT_STATUS_PROVISIONING — подготовка кластера к запуску. * OBJECT_STATUS_RUNNING — кластер запущен. * OBJECT_STATUS_RESUMING — работа кластера возобновляется. * OBJECT_STATUS_DELETING — кластер удаляется. * OBJECT_STATUS_ERROR — операция с группой узлов закончилась ошибкой. * OBJECT_STATUS_SCALING_UP — размер кластера увеличивается. * OBJECT_STATUS_SCALING_DOWN — размер кластера уменьшается. * OBJECT_STATUS_STOPPING — работа кластера останавливается. * OBJECT_STATUS_STOPPED — работа кластера остановлена. * OBJECT_STATUS_SUSPENDING — работа кластера приостанавливается из-за отсутствия средств. * OBJECT_STATUS_SUSPENDED — работа кластера приостановлена из-за отсутствия средств. * OBJECT_STATUS_UPGRADING — версия кластера обновляется. * OBJECT_STATUS_EDITING — параметры кластера редактируются.
+
+updated_at (String) Дата и время последнего редактирования кластера.
+
+updated_by (String) Идентификатор последнего пользователя, редактировавшего кластер.
+
+version_upgrade (Attributes) Информация о доступных версиях Kubernetes для обновления плоскости управления кластера. (see below for nested schema)
+
+Nested Schema for identity_configuration
+Required:
+
+cluster_sa_id (String) Идентификатор сервисного аккаунта.
+
+Nested Schema for network_configuration_request
+Required:
+
+private_vip_subnet_id (String) Идентификатор подсети, из которой необходимо выделить внутренний IP-адрес.
+
+Optional:
+
+kube_api_internet (Boolean) Признак публикации kube-apiserver в интернет.
+
+network_plugin (Attributes) Плагин CNI для обеспечения сетевой связности и сетевых политик в кластере. (see below for nested schema)
+
+pods_subnet_cidr (String) Адрес подсети подов в формате RFC1918. Не должен пересекаться с сетью сервисов или сетью узлов.
+
+services_subnet_cidr (String) Адрес подсети сервисов в формате RFC1918. Не должен пересекаться с подовой сетью или сетью узлов.
+
+Nested Schema for network_configuration_request.network_plugin
+Optional:
+
+calico (Attributes) Настройки для использования Calico в качестве CNI-плагина. (see below for nested schema)
+
+cilium (Attributes) Настройки для использования Cilium в качестве CNI-плагина. (see below for nested schema)
+
+Nested Schema for network_configuration_request.network_plugin.calico
+Optional:
+
+app_version (String) Версия приложения в формате SemVer согласно версионированию поставщика.
+
+enabled (Boolean) Опция использования Calico в качестве CNI-плагина кластера.
+
+version (String) Версия плагина в формате SemVer согласно версионированию Managed Kubernetes.
+
+Nested Schema for network_configuration_request.network_plugin.cilium
+Optional:
+
+app_version (String) Версия приложения в формате SemVer согласно версионированию поставщика.
+
+enabled (Boolean) Опция использования Cilium в качестве CNI-плагина кластера.
+
+version (String) Версия плагина в формате SemVer согласно версионированию Managed Kubernetes.
+
+Nested Schema for sizing_configuration
+Required:
+
+flavor_id (String) Идентификатор шаблона конфигурации.
+
+master_count (Number) Количество узлов плоскости управления.
+
+Nested Schema for audit_service
+Optional:
+
+enabled (Boolean) Включение/выключение аудит-логирования событий компонентов кластера. Возможные значения: true — аудит-логирование включено, false — аудит-логирование выключено. По умолчанию аудит-логирование включено.
+
+Nested Schema for bootstrap_managed_addons
+Optional:
+
+coredns (Attributes) Конфигурация плагина CoreDNS. (see below for nested schema)
+
+horizontal_pod_autoscaling (Attributes) Конфигурация плагина горизонтального масштабирования подов в кластере. Увеличивает или уменьшает количество реплик подов в зависимости от потребления ресурсов уже работающих подов. (see below for nested schema)
+
+kube_proxy (Attributes) Конфигурация плагина kube-proxy. (see below for nested schema)
+
+persistent_disk_csi_driver (Attributes) Конфигурация плагина CSI Driver для работы с постоянными томами для хранения данных. (see below for nested schema)
+
+Nested Schema for bootstrap_managed_addons.coredns
+Optional:
+
+enabled (Boolean) Опция подключения плагина. По умолчанию плагин включен.
+
+Nested Schema for bootstrap_managed_addons.horizontal_pod_autoscaling
+Optional:
+
+enabled (Boolean) Опция подключения плагина. По умолчанию плагин включен.
+
+Nested Schema for bootstrap_managed_addons.kube_proxy
+Optional:
+
+enabled (Boolean) Опция подключения плагина. По умолчанию плагин включен. Отключение плагина может привести к нарушению сетевой связности внутри кластера.
+
+Nested Schema for bootstrap_managed_addons.persistent_disk_csi_driver
+Optional:
+
+enabled (Boolean) Опция подключения плагина По умолчанию плагин включен.
+
+Nested Schema for key_management_service
+Optional:
+
+enabled (Boolean) Включение шифрования ресурсов кластера. Возможные значения: true — шифрование включено, false — шифрование выключено. По умолчанию шифрование выключено. Если установлен параметр false, идентификатор ключа шифрования ключа (KEK — Key Encryption Key) игнорируется.
+
+kek_id (String) Идентификатор ключа шифрования ключа (KEK — Key Encryption Key).
+
+Nested Schema for logging_service
+Optional:
+
+enabled (Boolean) Включение/выключение логирования событий компонентов кластера. Возможные значения: true — логирование включено, false — логирование выключено. По умолчанию логирование включено. Если установлен параметр false, настройки лог-группы игнорируются.
+
+log_group_id (String) Идентификатор лог-группы. Если не указывается, используется значение по умолчанию.
+
+Nested Schema for monitoring_service
+Optional:
+
+enabled (Boolean) Включение/выключение мониторинга компонентов кластера. Возможные значения: true — мониторинг включен, false — мониторинг выключен. По умолчанию мониторинг включен.
+
+Nested Schema for control_plane
+Read-Only:
+
+count (Number) Количество узлов плоскости управления.
+
+machine_configuration (Attributes) Описание инфраструктуры мастер-узлов. (see below for nested schema)
+
+upgrade_info (Attributes) Информация о процессе обновления плоскости управления кластера. (see below for nested schema)
+
+version (String) Версия Kubernetes.
+
+zones (List of String) Идентификаторы зон доступности, в которых будут размещены узлы плоскости управления. Для зонального кластера указывается идентификатор одной зоны, для регионального — три и более.
+
+Nested Schema for control_plane.machine_configuration
+Read-Only:
+
+disk (Attributes) Конфигурация диска. (see below for nested schema)
+
+flavor (Attributes) Шаблон конфигурации для виртуальной машины (ВМ). (see below for nested schema)
+
+Nested Schema for control_plane.machine_configuration.disk
+Read-Only:
+
+size (Number) Размер подключенного диска в ГБ.
+
+type_name (String) Название типа диска.
+
+Nested Schema for control_plane.machine_configuration.flavor
+Read-Only:
+
+cpu (Number) Количество ядер процессора виртуальной машины.
+
+flavor_id (String) Идентификатор шаблона конфигурации.
+
+gpu (Number) Количество графических процессоров, выделенных виртуальной машине.
+
+name (String) Название шаблона конфигурации.
+
+oversubscription (String) Коэффициент переподписки, например «1:3».
+
+ram (Number) Оперативная память виртуальной машины в ГБ.
+
+type (String) Тип шаблона конфигурации.
+
+Nested Schema for control_plane.upgrade_info
+Read-Only:
+
+desired_version (String) Версия Kubernetes, на которую выполняется обновление.
+
+phase (String) Стадия обновления. Возможные значения: * CONTROL_PLANE_UPGRADE_PHASE_RUNNING — обновление выполняется. * CONTROL_PLANE_UPGRADE_PHASE_ROLLBACK — откат обновления.
+
+Nested Schema for network_configuration
+Read-Only:
+
+cp_endpoints (Attributes List) Адреса плоскости управления. (see below for nested schema)
+
+kube_api_internet (Boolean) Признак публикации kube-apiserver в интернет.
+
+nodes_subnet_cidr (String) Адрес подсети узлов плоскости управления.
+
+nodes_subnet_id (String) Идентификатор подсети узлов плоскости управления.
+
+pods_subnet_cidr (String) Адрес подсети подов.
+
+private_vip_subnet_id (String) Идентификатор подсети, из которой выделен внутренний IP-адрес.
+
+services_subnet_cidr (String) Адрес подсети сервисов.
+
+vpc_id (String) Идентификатор VPC.
+
+Nested Schema for network_configuration.cp_endpoints
+Read-Only:
+
+address (String) Адрес плоскости управления кластера в формате «https://domain:port».
+
+network (String) Тип сети, которой принадлежит адрес. Возможные значения: * NETWORK_TYPE_PRIVATE — приватная пользовательская сеть (RFC1918). * NETWORK_TYPE_PUBLIC — публичная пользовательская сеть (интернет).
+
+Nested Schema for node_pools
+Read-Only:
+
+count (Number) Количество групп узлов.
+
+cpu (Number) Количество ядер процессора виртуальных машин.
+
+disk_size (Number) Размер подключаемых дисков в ГБ.
+
+gpu (Number) Количество графических процессоров.
+
+ram (Number) Оперативная память виртуальных машин в ГБ.
+
+Nested Schema for version_upgrade
+Read-Only:
+
+available_versions (List of String) Список доступных версий Kubernetes для обновления кластера. Версии отсортированы в порядке убывания, начиная с самой старшей версии.
+
+upgrade_available (Boolean) Признак доступности новой версии Kubernetes.
