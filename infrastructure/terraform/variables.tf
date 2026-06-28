@@ -122,10 +122,10 @@ variable "services_subnet_cidr" {
 variable "release_channel" {
   description = "Канал обновлений"
   type        = string
-  default     = "REGULAR"
+  default     = "RELEASE_CHANNEL_REGULAR"
   validation {
-    condition     = contains(["RELEASE_CHANNEL_RAPID", "REGULAR", "STABLE"], var.release_channel)
-    error_message = "Допустимо: RELEASE_CHANNEL_RAPID, REGULAR, STABLE"
+    condition     = contains(["RELEASE_CHANNEL_RAPID", "RELEASE_CHANNEL_REGULAR", "RELEASE_CHANNEL_STABLE"], var.release_channel)
+    error_message = "Допустимо: RELEASE_CHANNEL_RAPID, RELEASE_CHANNEL_REGULAR, RELEASE_CHANNEL_STABLE"
   }
 }
 
