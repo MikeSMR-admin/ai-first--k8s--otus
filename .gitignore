@@ -1,4 +1,13 @@
 Template-spec.md
-.tools/terraform.exe
 
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfvars
+.terraform.lock.hcl
+terraform.tfstate.backup
 .env
+
+# PowerShell
+*.ps1
