@@ -9,13 +9,13 @@ output "cluster_name" {
 }
 
 output "cluster_status" {
-  description = "Текущий статус кластера"
+  description = "Статус кластера"
   value       = cloudru_evolution_mk8s_cluster.k8s.status
 }
 
 output "api_endpoint" {
   description = "Публичный или приватный эндпоинт API-сервера"
-  value       = cloudru_evolution_mk8s_cluster.k8s.api_server_endpoint
+  value       = cloudru_evolution_mk8s_cluster.k8s.network_configuration.cp_endpoints[0].address
 }
 
 output "kubeconfig" {
@@ -24,12 +24,12 @@ output "kubeconfig" {
   sensitive   = true
 }
 
-output "infra_node_group_id" {
+output "infra_node_pool_id" {
   description = "ID группы инфра-нод"
-  value       = cloudru_evolution_mk8s_node_group.infra.id
+  value       = cloudru_evolution_mk8s_node_pool.infra.id
 }
 
-output "worker_node_group_id" {
+output "worker_node_pool_id" {
   description = "ID группы воркер-нод"
-  value       = cloudru_evolution_mk8s_node_group.workers.id
+  value       = cloudru_evolution_mk8s_node_pool.workers.id
 }

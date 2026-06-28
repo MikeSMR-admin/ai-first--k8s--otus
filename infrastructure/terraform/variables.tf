@@ -20,7 +20,7 @@ variable "project_id" {
 }
 
 # ============================================================
-#  Параметры кластера
+#  Параметры кластера (обязательные)
 # ============================================================
 variable "cluster_name" {
   description = "Имя кластера (3–60 символов)"
@@ -37,14 +37,6 @@ variable "cluster_sa_id" {
   type        = string
 }
 
-variable "control_plane_zones" {
-  description = "Список зон доступности (например, ['ru-central1-a'])"
-  type        = list(string)
-}
-
-# ============================================================
-#  Параметры мастер-узлов (control plane)
-# ============================================================
 variable "master_count" {
   description = "Количество мастер-узлов (1 или 3+)"
   type        = number
@@ -59,11 +51,14 @@ variable "master_flavor_id" {
   type        = string
 }
 
-# ============================================================
-#  Параметры групп узлов (node groups)
-# ============================================================
+variable "control_plane_zones" {
+  description = "Список зон доступности (например, ['ru-central1-a'])"
+  type        = list(string)
+}
 
-# --- Инфра-ноды (4 vCPU, 8 GB RAM) ---
+# ============================================================
+#  Параметры групп узлов (node pools)
+# ============================================================
 variable "infra_node_flavor_id" {
   description = "Flavor для инфра-нод (4 vCPU, 8 GB RAM)"
   type        = string
@@ -75,7 +70,6 @@ variable "infra_node_count" {
   default     = 2
 }
 
-# --- Воркер-ноды (2 vCPU, 4 GB RAM) ---
 variable "worker_node_flavor_id" {
   description = "Flavor для воркер-нод (2 vCPU, 4 GB RAM)"
   type        = string
@@ -88,7 +82,7 @@ variable "worker_node_count" {
 }
 
 # ============================================================
-#  Сетевые параметры
+#  Сетевые параметры (обязательные)
 # ============================================================
 variable "network_plugin" {
   description = "CNI-плагин: cilium или calico"
@@ -100,7 +94,12 @@ variable "network_plugin" {
 }
 
 variable "private_vip_subnet_id" {
-  description = "ID подсети для VIP (внутренний балансировщик)"
+  description = "ID подсети для внутреннего VIP-адреса кластера"
+  type        = string
+}
+
+variable "nodes_subnet_id" {
+  description = "ID подсети для узлов (node subnet) — должна быть создана в VPC"
   type        = string
 }
 
@@ -117,7 +116,7 @@ variable "services_subnet_cidr" {
 }
 
 # ============================================================
-#  Опциональные параметры
+#  Опциональные параметры (доступность, сервисы)
 # ============================================================
 variable "release_channel" {
   description = "Канал обновлений"
@@ -163,10 +162,4 @@ variable "log_group_id" {
   description = "ID группы логов (обязательно, если logging_service_enabled = true)"
   type        = string
   default     = ""
-}
-
-variable "log_group_region" {
-  description = "Регион группы логов"
-  type        = string
-  default     = "ru-central-1"
 }

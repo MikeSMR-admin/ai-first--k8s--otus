@@ -1,0 +1,41 @@
+# ==================== Аутентификация ====================
+TF_VAR_auth_key_id=ac6bf2a52f51f00cf2fc82a31aec937a
+TF_VAR_auth_secret=8c73879d7fb896edfb4dc49e331dfb07
+TF_VAR_project_id=120acc13-f4e2-471d-a896-7ba624a70b3d
+
+# ==================== Сервисный аккаунт кластера ====================
+TF_VAR_cluster_sa_id=5d9112c7-c94c-4d7e-a61f-b862ea570175
+
+# ==================== Параметры кластера ====================
+TF_VAR_cluster_name=production-cluster
+TF_VAR_control_plane_version=v1.34.1
+TF_VAR_control_plane_zones=["ru.AZ-1"]
+
+# ==================== Мастер-узлы ====================
+TF_VAR_master_count=1
+TF_VAR_master_flavor_id=49c10d7f-081d-4a2c-9a68-123ef11c6e32
+
+# ==================== Инфра-ноды (4 vCPU, 8 GB) ====================
+TF_VAR_infra_node_flavor_id=9f923b60-20ef-4ddb-831e-b3bf4c3ededa
+TF_VAR_infra_node_count=2
+
+# ==================== Воркер-ноды (2 vCPU, 4 GB) ====================
+TF_VAR_worker_node_flavor_id=82d31572-23e0-4937-a6af-45ddae64ba87
+TF_VAR_worker_node_count=3
+
+# ==================== Сеть ====================
+TF_VAR_network_plugin=cilium
+TF_VAR_private_vip_subnet_id=6477b9ec-4917-4189-8bfd-ad9d28a78b78
+# ⚠️ Замените на реальный ID подсети для узлов (должна быть создана в VPC)
+TF_VAR_nodes_subnet_id=                          # <-- Укажите ID подсети для узлов
+TF_VAR_pods_subnet_cidr=10.1.0.0/16
+TF_VAR_services_subnet_cidr=10.96.0.0/12
+
+# ==================== Доступность и сервисы ====================
+TF_VAR_kube_api_internet=true
+TF_VAR_monitoring_service_enabled=true
+TF_VAR_logging_service_enabled=true
+TF_VAR_audit_service_enabled=false
+TF_VAR_key_management_service_enabled=false
+TF_VAR_release_channel=RELEASE_CHANNEL_REGULAR
+TF_VAR_log_group_id=393cbb5f-0b67-48af-8b5e-b60c6d67b58f
