@@ -3,10 +3,10 @@
 ## Требования
 - Установленный Terraform (≥ 1.0)
 - PowerShell (для Windows)
-- Файл `.env` с заполненными переменными (уже создан)
+- Файл `.env` с заполненными переменными находится здесь: infrastructure\terraform\.env
 
-## Шаги для запуска
+## Шаги перед запуском скриптов terraform
 
 1. **Загрузить переменные окружения:**
    ```powershell
-   .\load-env.ps1
+   infrastructure\terraform\load-env.ps1
