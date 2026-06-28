@@ -20,11 +20,18 @@
 - В Cloud.ru можно создать кластер с несколькими группами узлов (node groups) с разными характеристиками.
 - Для разделения нагрузок используются `nodeSelector` и `taints/tolerations`.
 - Инфра-ноды должны иметь taint, чтобы обычные приложения на них не планировались, а инфра-сервисы — имели toleration.
+- Terraform развернут по пути:\Users\AntApart\repo--ai-first--k8s-otus\ai-first--k8s--otus\ai-first--k8s--otus\.tools\terraform.exe
+- ID проекта в cloud.ru: 120acc13-f4e2-471d-a896-7ba624a70b3d
 
 ## Пример
 - Пример скрипта terraform и его описание для создания кластера находится здесь: infrastructure\terraform\example.md
 
 ## Тесты
+- Прежде чем применять конфигурацию обязательно проверь ее
+- terraform validate
+- Если в конфигурации нет ошибок, появится сообщение: Success! The configuration is valid.
+- Просмотрите планируемые изменения: terraform plan
+- При успешном выполнении отобразится список ресурсов и их параметры: terraform apply
 1. Проверить количество узлов в кластере (`kubectl get nodes`).
 2. Проверить, что на мастер-ноде нет подов, кроме системных (`kubectl get pods -A -o wide | grep <master-node>`).
 3. Проверить, что инфра-поды (Ingress, ArgoCD, мониторинг) запущены на инфра-нодах.
