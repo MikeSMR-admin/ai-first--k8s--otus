@@ -11,3 +11,5 @@ terraform.tfstate.backup
 
 # PowerShell
 *.ps1
+
+other.md
