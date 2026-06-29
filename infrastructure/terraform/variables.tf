@@ -52,8 +52,9 @@ variable "master_flavor_id" {
 }
 
 variable "control_plane_zones" {
-  description = "Список зон доступности (например, ['ru-central1-a'])"
+  description = "Список зон доступности (UUID)"
   type        = list(string)
+  default     = ["7c99a597-8516-494f-a2c7-d7377048681e"]   # ru.AZ-1
 }
 
 # ============================================================
@@ -87,6 +88,7 @@ variable "worker_node_count" {
 variable "network_plugin" {
   description = "CNI-плагин: cilium или calico"
   type        = string
+  default     = "cilium"
   validation {
     condition     = contains(["cilium", "calico"], var.network_plugin)
     error_message = "Допустимо: cilium или calico"
