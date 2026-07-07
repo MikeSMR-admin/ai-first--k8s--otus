@@ -52,7 +52,7 @@ resource "cloudru_evolution_mk8s_cluster" "k8s" {
     network_plugin = {
       cilium = {
         enabled = true
-        version = "1.14.0"
+        version = var.network_plugin_version
       }
     }
     private_vip_subnet_id = var.private_vip_subnet_id

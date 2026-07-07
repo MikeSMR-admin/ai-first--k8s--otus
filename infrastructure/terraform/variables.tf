@@ -95,6 +95,12 @@ variable "network_plugin" {
   }
 }
 
+variable "network_plugin_version" {
+  description = "Версия CNI-плагина (например, 1.19.3-sbc.0 для Cilium)"
+  type        = string
+  default     = "1.19.3-sbc.0"
+}
+
 variable "private_vip_subnet_id" {
   description = "ID подсети для внутреннего VIP-адреса кластера"
   type        = string
