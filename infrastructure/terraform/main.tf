@@ -14,16 +14,16 @@ provider "cloudru" {
   region      = "ru-central-1"
 
   endpoints = {
-    iam_endpoint           = "iam.api.cloud.ru:443"
-    compute_endpoint       = "compute.api.cloud.ru:443"
-    baremetal_endpoint     = "baremetal.api.cloud.ru:443"
-    mk8s_endpoint          = "mk8s.api.cloud.ru:443"
-    vpc_endpoint           = "vpc.api.cloud.ru:443"
-    magic_router_endpoint  = "magic-router.api.cloud.ru"
-    dns_endpoint           = "dns.api.cloud.ru:443"
-    nlb_endpoint           = "nlb.api.cloud.ru"
-    kafka_endpoint         = "kafka.api.cloud.ru:443"
-    redis_endpoint         = "redis.api.cloud.ru:443"
+    iam_endpoint            = "iam.api.cloud.ru:443"
+    compute_endpoint        = "compute.api.cloud.ru:443"
+    baremetal_endpoint      = "baremetal.api.cloud.ru:443"
+    mk8s_endpoint           = "mk8s.api.cloud.ru:443"
+    vpc_endpoint            = "vpc.api.cloud.ru:443"
+    magic_router_endpoint   = "magic-router.api.cloud.ru"
+    dns_endpoint            = "dns.api.cloud.ru:443"
+    nlb_endpoint            = "nlb.api.cloud.ru"
+    kafka_endpoint          = "kafka.api.cloud.ru:443"
+    redis_endpoint          = "redis.api.cloud.ru:443"
     object_storage_endpoint = "https://s3.cloud.ru"
   }
 }
@@ -87,10 +87,14 @@ resource "cloudru_evolution_mk8s_cluster" "k8s" {
 resource "cloudru_evolution_mk8s_node_pool" "infra" {
   cluster_id = cloudru_evolution_mk8s_cluster.k8s.id
   name       = "${var.cluster_name}-infra"
-  version    = var.control_plane_version   # версия Kubernetes для узлов
+  version    = var.control_plane_version
 
   machine_configuration_request = {
     flavor_id = var.infra_node_flavor_id
+    disk = {
+      type_name = "SSD"
+      size      = 50
+    }
   }
 
   scale_policy = {
@@ -104,17 +108,15 @@ resource "cloudru_evolution_mk8s_node_pool" "infra" {
   }
 
   taints = {
-    taints = [
-      {
-        key    = "node-role"
-        value  = "infra"
-        effect = "NO_SCHEDULE"
-      }
-    ]
+    taints = [{
+      key    = "node-role"
+      value  = "infra"
+      effect = "EFFECT_NO_SCHEDULE"
+    }]
   }
 
   update_configuration = {
-    strategy = "ROLLING_UPDATE"
+    strategy = "NODE_POOL_UPDATE_STRATEGY_ROLLING_UPDATE"
     rolling_update_policy = {
       max_unavailable = 1
       max_surge       = 1
@@ -132,6 +134,10 @@ resource "cloudru_evolution_mk8s_node_pool" "workers" {
 
   machine_configuration_request = {
     flavor_id = var.worker_node_flavor_id
+    disk = {
+      type_name = "SSD"
+      size      = 50
+    }
   }
 
   scale_policy = {
@@ -145,7 +151,7 @@ resource "cloudru_evolution_mk8s_node_pool" "workers" {
   }
 
   update_configuration = {
-    strategy = "ROLLING_UPDATE"
+    strategy = "NODE_POOL_UPDATE_STRATEGY_ROLLING_UPDATE"
     rolling_update_policy = {
       max_unavailable = 1
       max_surge       = 1
